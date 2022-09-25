@@ -2,29 +2,52 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
-from pydantic.dataclasses import dataclass
 
 
-@dataclass
-class User:
-    id: int
+class UserSchema(BaseModel):
+    id: Optional[int]
     username: str
-    first_name: str
-    last_name: str
-    age: int
-    created_at: datetime
-
-class UpdateUserSchema(BaseModel):
-    id: Optional[int] 
-    username: Optional[str]
     first_name: Optional[str]
     last_name: Optional[str]
-    age: Optional[int]
+    age: int
     created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+class ExtendedUserSchema(UserSchema):
+
+    notifications: List['NotificationSchema']
+
+    class Config:
+        orm_mode = True
 
 
+class UpdateUserSchema(UserSchema):
+    username: Optional[str]
+    age: Optional[int]
 
-@dataclass
-class UserList:
+
+class UserList(BaseModel):
     count: int
-    users: List[User]
+    users: List[UserSchema]
+
+
+class NotificationSchema(BaseModel):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+    message: str
+
+    class Config:
+        orm_mode = True
+
+
+class NotificationList(BaseModel):
+    count: int
+    notifications: List[NotificationSchema]
+
+
+ExtendedUserSchema.update_forward_refs()
