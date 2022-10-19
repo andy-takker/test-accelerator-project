@@ -1,26 +1,34 @@
-from datetime import datetime
 from typing import List
+import time
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi_pagination import LimitOffsetPage, LimitOffsetParams
+from fastapi_pagination.ext.async_sqlalchemy import paginate
 from pydantic import parse_obj_as
+from redis import Redis
+from rq import Queue
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from sqlalchemy.orm import selectinload
 
+from config import get_settings
 from db import User, Notification
 from db.engine import get_async_session
+from jobs import create_user_job
 from routers.schemas import NotificationList, NotificationSchema, UserList, \
     UpdateUserSchema, UserSchema, ExtendedUserSchema
 
 user_router = APIRouter(prefix='/users', tags=['Пользователи'])
 
 
-@user_router.get('/', name='Все пользователи', response_model=UserList)
-async def get_all_users(session: AsyncSession = Depends(get_async_session)):
+@user_router.get('/', name='Все пользователи', response_model=LimitOffsetPage[UserSchema])
+async def get_all_users(
+    limit: int = Query(),
+    offset: int = Query(),
+    session: AsyncSession = Depends(get_async_session)):
     q = select(User)
-    users = (await session.execute(q)).scalars().all()
-    return UserList(count=len(users), users=parse_obj_as(List[UserSchema], users))
+    return await paginate(session, q, params=LimitOffsetParams(limit=limit, offset=offset))
 
 
 @user_router.post('/', name='Добавить пользователя', response_model=UserSchema)
@@ -82,3 +90,15 @@ async def get_user_notifications(user_id: int, session: AsyncSession = Depends(g
         count=len(notifications), 
         notifications=parse_obj_as(List[NotificationSchema], notifications),
     )
+
+
+@user_router.post('/create-background-task', tags=['Фоновые задачи'])
+async def create_background_task(
+    request: Request, 
+    age: int = Query(), 
+    username: str = Query(),
+):
+    request.state.queue.enqueue(create_user_job, username, age)
+    return {
+        'success': True,
+    }
