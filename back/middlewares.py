@@ -2,8 +2,8 @@ import redis
 from rq import Queue
 from starlette.middleware.base import BaseHTTPMiddleware
 
-class RedisMiddleware(BaseHTTPMiddleware):
 
+class RedisMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, settings):
         super().__init__(app)
         self.app = app
@@ -12,8 +12,7 @@ class RedisMiddleware(BaseHTTPMiddleware):
             port=settings.REDIS_PORT,
             password=settings.REDIS_PASSWORD,
         )
-        self.queue  = Queue(connection=self.redis)
-
+        self.queue = Queue(connection=self.redis)
 
     async def dispatch(self, request, call_next):
         request.state.queue = self.queue

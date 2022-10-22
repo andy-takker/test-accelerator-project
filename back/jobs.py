@@ -18,7 +18,7 @@ async def _create_user(username: str, age: int):
             await async_session.commit()
         except SQLAlchemyError as exc:
             await async_session.rollback()
-            logger.error('Get sqlalchemy error')
+            logger.error("Get sqlalchemy error")
             raise exc
         finally:
             await async_session.close()
