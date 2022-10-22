@@ -37,8 +37,6 @@ services:
       - .env
     depends_on:
       - db
-    volumes:
-      - ./:/back
 
   redis:
     image: redis
