@@ -16,31 +16,29 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - postgres_data:/var/lib/postgresql/data
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - "8080:8080"
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - "8080:8080"
 
-    depends_on:
-      - db
+  #   depends_on:
+  #     - db
 
   back:
     image: back
     container_name: python-fastapi-slim
     restart: always
     build:
-      context: ./
+      context: ./back
       dockerfile: Dockerfile
-    command: uvicorn asgi:app --host 0.0.0.0 --port 8000 --reload
+    command: gunicorn -c gunicorn.conf.py main:app
     env_file:
       - .env
-    ports:
-     - "8000:8000"
     depends_on:
       - db
     volumes:
-      - ./back:/back
+      - ./:/back
 
   redis:
     image: redis
@@ -62,9 +60,20 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
+  nginx:
+    depends_on:
+      - back
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+
 volumes:
   postgres_data:
     driver: local
-  
+
   redis_data:
     driver: local
