@@ -16,15 +16,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - postgres_data:/var/lib/postgresql/data
 
-  # adminer:
-  #   image: adminer
-  #   restart: always
-  #   ports:
-  #     - "8080:8080"
-
-  #   depends_on:
-  #     - db
-
   back:
     image: back
     container_name: python-fastapi-slim
@@ -37,8 +28,6 @@ services:
       - .env
     depends_on:
       - db
-    volumes:
-      - ./:/back
 
   redis:
     image: redis
