@@ -30,8 +30,8 @@ jobs:
             cd test-accelerator-project/
             git reset --hard
             git pull
-            docker compose buil --no-cache
+            docker compose build --no-cache
             docker compose up -d
-            docker compose exec back alembic uprade head
+            docker compose exec back alembic upgrade head
             docker compose exec back pytest
           EOF
