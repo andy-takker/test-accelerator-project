@@ -13,7 +13,7 @@ jobs:
       - name: Update and re-run system
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_SERVER: ${{ serets.SSH_SERVER }}
+          SSH_SERVER: ${{ secrets.SSH_SERVER }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           echo "Create ssh connection with server"
